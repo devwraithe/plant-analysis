@@ -23,10 +23,14 @@ class WidgetHelper {
       decoration: const BoxDecoration(
         color: Colors.white,
       ),
-      padding: const EdgeInsets.all(30),
+      padding: const EdgeInsets.all(40),
       child: Center(
         child: shutter,
       ),
     );
   }
+
+  // static Widget imagePreview() {
+  //
+  // }
 }
