@@ -5,6 +5,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:mime/mime.dart';
+import 'package:plant_analysis/app/modules/plant_details_screen.dart';
 
 import '../../shared/helpers/widget_helper.dart';
 
@@ -17,6 +18,8 @@ class ScannerScreen extends StatefulWidget {
 
 class _ScannerScreenState extends State<ScannerScreen> {
   final String apiKey = "AIzaSyCnuSoAywPxinSPDs7Mz9KnFFmfs9veZK4";
+
+  final ValueNotifier plantDetailsAvailable = ValueNotifier(false);
 
   String? aiResponse;
 
@@ -36,7 +39,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
     setState(() => aiResponse = response.text);
 
-    debugPrint("Plant information available - $aiResponse");
+    plantDetailsAvailable.value = true;
+
+    debugPrint("Plant details - $aiResponse");
   }
 
   late List<CameraDescription> _cameras;
@@ -74,20 +79,33 @@ class _ScannerScreenState extends State<ScannerScreen> {
               builder: (context, _, child) {
                 return Stack(
                   children: [
-                    showPreview.value == true
-                        ? _previewImage(
-                            imagePath!,
+                    plantDetailsAvailable.value == true
+                        ? _retrievedImage(
                             () {
-                              showPreview.value = false;
-                              imagePath = null;
-
-                              debugPrint("Preview false, Path cleaned!");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) {
+                                    return PlantDetailsScreen(
+                                      plantImage: imagePath!,
+                                      plantInfo: aiResponse!,
+                                    );
+                                  },
+                                ),
+                              );
                             },
                           )
-                        : Hero(
-                            tag: "hero_image",
-                            child: CameraPreview(_controller),
-                          ),
+                        : showPreview.value == true
+                            ? _previewImage(
+                                imagePath!,
+                                () {
+                                  showPreview.value = false;
+                                  imagePath = null;
+
+                                  debugPrint("Preview false, Path cleaned!");
+                                },
+                              )
+                            : CameraPreview(_controller),
                   ],
                 );
               },
@@ -108,7 +126,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
                   setState(() {
                     imagePath = image.path;
-                    _showPreview = true;
                   });
                   debugPrint("Image captured! ${image.path}");
                 } catch (e) {
@@ -124,7 +141,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   String? imagePath;
-  bool _showPreview = false;
 
   final ValueNotifier showPreview = ValueNotifier(false);
 
@@ -189,50 +205,49 @@ class _ScannerScreenState extends State<ScannerScreen> {
     void Function()? onTap,
   ) {
     return Expanded(
-      child: Hero(
-        tag: "hero_image",
-        child: GestureDetector(
-          onTap: onTap,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.redAccent.withOpacity(0.16),
-            ),
-            child: Center(
-              child: Container(
-                height: 440,
-                width: 320,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 26,
-                  vertical: 26,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(24),
-                        child: Image.file(
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          File(imagePath!),
-                        ),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.redAccent.withOpacity(0.16),
+          ),
+          child: Center(
+            child: Container(
+              height: 440,
+              width: 320,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 26,
+                vertical: 26,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.file(
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        File(imagePath!),
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    const Text(
-                      "Analyzing Nick's photos...",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w500,
-                      ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    aiResponse!,
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w500,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
