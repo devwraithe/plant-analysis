@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'modules/home_screen.dart';
+import 'package:plant_analysis/app/modules/scanner/scanner_screen.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -14,7 +13,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const HomeScreen(title: 'Flutter Demo Home Page'),
+      // home: const HomeScreen(title: 'Flutter Demo Home Page'),
+      home: const ScannerScreen(),
     );
   }
 }
