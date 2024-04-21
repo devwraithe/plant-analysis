@@ -218,7 +218,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                         child: Image.file(
                           width: double.infinity,
                           fit: BoxFit.cover,
-                          File(imagePath),
+                          File(imagePath!),
                         ),
                       ),
                     ),
