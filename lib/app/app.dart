@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:plant_analysis/app/modules/scanner/scanner_screen.dart';
 import 'package:plant_analysis/app/shared/theme/app_theme.dart';
-
-import 'modules/scanner/scanner_effects.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -14,7 +13,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
       themeMode: ThemeMode.light,
-      home: const ScannerEffects(),
+      home: const ScannerScreen(),
     );
   }
 }

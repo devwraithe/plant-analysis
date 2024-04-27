@@ -1,19 +1,24 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:plant_analysis/app/shared/helpers/widget_helper.dart';
+import 'package:plant_analysis/app/shared/theme/text_theme.dart';
 
 import '../../shared/theme/app_colors.dart';
-import '../../shared/theme/text_theme.dart';
 
-class ScannerEffects extends StatefulWidget {
-  const ScannerEffects({Key? key}) : super(key: key);
+class ScannerScreen extends StatefulWidget {
+  const ScannerScreen({super.key});
 
   @override
-  State<ScannerEffects> createState() => _ScannerEffectsState();
+  State<ScannerScreen> createState() => _ScannerScreenState();
 }
 
-class _ScannerEffectsState extends State<ScannerEffects>
+class _ScannerScreenState extends State<ScannerScreen>
     with TickerProviderStateMixin {
-  late AnimationController _controller;
+  final ValueNotifier isCapture = ValueNotifier(false);
+  String? imagePath;
+
+  // Handling animations
+  late AnimationController _animationController;
   Animation<double>? scaleAnimation,
       sizeAnimation,
       widthAnimation,
@@ -22,19 +27,29 @@ class _ScannerEffectsState extends State<ScannerEffects>
       rotateAnimation,
       radiusAnimation;
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 1),
-      vsync: this,
+  late List<CameraDescription> _cameras;
+  late CameraController _controller;
+
+  void _getAvailableCameras() async {
+    _cameras = await availableCameras();
+    _controller = CameraController(
+      _cameras[0],
+      ResolutionPreset.max,
     );
+    _controller.initialize().then((_) {
+      if (!mounted) return;
+      setState(() {});
+    });
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    );
+    _getAvailableCameras();
   }
 
   void _triggerAnimation() {
@@ -43,7 +58,7 @@ class _ScannerEffectsState extends State<ScannerEffects>
       end: 0.64,
     ).animate(
       CurvedAnimation(
-        parent: _controller,
+        parent: _animationController,
         curve: const Interval(0.0, 0.5),
       ),
     );
@@ -52,7 +67,7 @@ class _ScannerEffectsState extends State<ScannerEffects>
       end: 260.0,
     ).animate(
       CurvedAnimation(
-        parent: _controller,
+        parent: _animationController,
         curve: const Interval(0.0, 0.6),
       ),
     );
@@ -61,7 +76,7 @@ class _ScannerEffectsState extends State<ScannerEffects>
       end: 360.0,
     ).animate(
       CurvedAnimation(
-        parent: _controller,
+        parent: _animationController,
         curve: const Interval(0.0, 0.6),
       ),
     );
@@ -70,36 +85,45 @@ class _ScannerEffectsState extends State<ScannerEffects>
       end: -0.12,
     ).animate(
       CurvedAnimation(
-        parent: _controller,
+        parent: _animationController,
         curve: const Interval(0.0, 0.6),
       ),
     );
     radiusAnimation = Tween(
       begin: 0.0,
-      end: 28.0,
+      end: 20.0,
     ).animate(
       CurvedAnimation(
-        parent: _controller,
+        parent: _animationController,
         curve: const Interval(0.0, 0.6),
       ),
     );
     sizeAnimation = Tween(begin: 1000.0, end: 500.0).animate(
       CurvedAnimation(
-        parent: _controller,
+        parent: _animationController,
         curve: const Interval(0.0, 0.6),
       ),
     );
     paddingAnimation = Tween(begin: 0.0, end: 22.0).animate(
       CurvedAnimation(
-        parent: _controller,
+        parent: _animationController,
         curve: const Interval(0.0, 0.6),
       ),
     );
-    _controller.forward(from: 0);
+    _animationController.forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = AppTextTheme.textTheme;
+
     return Scaffold(
       body: SizedBox(
         height: MediaQuery.of(context).size.height,
@@ -110,7 +134,6 @@ class _ScannerEffectsState extends State<ScannerEffects>
               color: Colors.blue,
               alignment: Alignment.center,
               margin: const EdgeInsets.only(bottom: 80),
-
               height: MediaQuery.of(context).size.height,
               // Analyzing card
               child: AnimatedBuilder(
@@ -132,20 +155,25 @@ class _ScannerEffectsState extends State<ScannerEffects>
                       ),
                       child: Column(
                         children: [
-                          Expanded(
-                            child: Container(
-                              height: MediaQuery.of(context).size.height,
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(
-                                  radiusAnimation?.value ?? 0.0,
-                                ),
-                              ),
-                            ),
-                          ),
+                          // Expanded(
+                          //   child: isCapture.value == true
+                          //       ? ClipRRect(
+                          //           borderRadius: BorderRadius.circular(
+                          //             radiusAnimation?.value ?? 0.0,
+                          //           ),
+                          //           child: Image.file(
+                          //             width: double.infinity,
+                          //             height:
+                          //                 MediaQuery.of(context).size.height,
+                          //             fit: BoxFit.cover,
+                          //             File(imagePath!),
+                          //           ),
+                          //         )
+                          //       : CameraPreview(_controller),
+                          // ),
                           const SizedBox(height: 14),
                           Text(
-                            "Analyzing wraithe's photo",
+                            "Analyzing Nick's photo",
                             style: AppTextTheme.textTheme.bodyLarge?.copyWith(
                               color: AppColors.grey,
                             ),
@@ -157,29 +185,7 @@ class _ScannerEffectsState extends State<ScannerEffects>
                 },
               ),
             ),
-            // AnimatedBuilder(
-            //   animation: _controller,
-            //   builder: (context, child) {
-            //     return Container(
-            //       color: Colors.black,
-            //       height: sizeAnimation?.value,
-            //     );
-            //   },
-            // ),
-            // Container(
-            //   alignment: Alignment.center,
-            //   child: Column(
-            //     children: [
-            //       Container(
-            //         height: 240,
-            //         decoration: const BoxDecoration(
-            //           color: Colors.black,
-            //         ),
-            //       ),
-            //
-            //     ],
-            //   ),
-            // ),
+            // In-app camera preview
             Container(
               alignment: Alignment.bottomCenter,
               child: Container(
@@ -195,7 +201,20 @@ class _ScannerEffectsState extends State<ScannerEffects>
                 child: Center(
                   child: GestureDetector(
                     onTap: _triggerAnimation,
-                    child: WidgetHelper.shutter(() => _triggerAnimation()),
+                    child: WidgetHelper.shutter(
+                      () async {
+                        isCapture.value = true;
+                        debugPrint("Captured image!");
+
+                        try {
+                          final capturedImage = await _controller.takePicture();
+                          setState(() => imagePath = capturedImage.path);
+                          _triggerAnimation();
+                        } catch (e) {
+                          debugPrint(e.toString());
+                        }
+                      },
+                    ),
                   ),
                 ),
               ),
