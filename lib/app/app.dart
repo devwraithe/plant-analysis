@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plant_analysis/app/modules/scanner/scanner_screen.dart';
+import 'package:plant_analysis/app/shared/theme/app_theme.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -8,13 +9,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        fontFamily: "Google Sans",
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      // home: const HomeScreen(title: 'Flutter Demo Home Page'),
+      title: 'Plant Analysis',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.theme,
+      themeMode: ThemeMode.light,
       home: const ScannerScreen(),
     );
   }
